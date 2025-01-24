@@ -1,0 +1,9 @@
+{
+  "bot_started": "🚀 Bot erfolgreich verbunden und läuft!",
+  "server_online": "✅ {server} ist jetzt online!",
+  "server_offline": "⚠️ {server} ist offline!",
+  "voice_online": "🟢 {server}: Online",
+  "voice_offline": "🔴 {server}: Offline",
+  "server_starting": "🔄 {server} startet...",
+  "server_stopping": "🔄 {server} fährt runter..."
+}
