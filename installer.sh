@@ -56,9 +56,15 @@ function install_plsnerfbot() {
     git clone https://github.com/plsnerfrito/plsnerfBot.git "$INSTALL_DIR"
 
     cd "$INSTALL_DIR" || exit
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+
+    if [[ "$PTERO_MODE" == "true" ]]; then
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    else
+      python3 -m venv venv
+      source venv/bin/activate
+      pip install -r requirements.txt
+    fi
 }
 
 # 🔄 Update plsnerfBot
