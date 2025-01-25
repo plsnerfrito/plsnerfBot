@@ -57,7 +57,7 @@ function configure_plsnerfbot() {
     echo "🔧 Configuring plsnerfBot..."
 
     # Prüfe, ob wir in einem Pterodactyl-Container sind
-    if [ -f "/.dockerenv" ] && [ -d "/home/container" ]; then
+    if grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null || [ -d "/home/container" ]; then
         echo "✔ Pterodactyl environment detected. Using environment variables."
 
         PTERO_URL=${PTERO_URL:-"http://localhost"}
