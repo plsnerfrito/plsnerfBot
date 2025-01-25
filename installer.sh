@@ -230,7 +230,7 @@ EOL
 detect_pterodactyl
 
 if [[ "$PTERO_MODE" == "true" ]]; then
-    INSTALL_DIR="$(pwd)/plsnerfbot"
+    INSTALL_DIR="$(pwd)"
 else
     INSTALL_DIR="/opt/plsnerfbot"
 fi
