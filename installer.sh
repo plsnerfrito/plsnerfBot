@@ -57,14 +57,16 @@ function install_plsnerfbot() {
 
     cd "$INSTALL_DIR" || exit
 
-    if [[ "$PTERO_MODE" == "true" ]]; then
-      apt update && apt install -y python3-pip
-      pip install --upgrade pip
-      pip install -r requirements.txt
+     if [[ "$PTERO_MODE" == "true" ]]; then
+        echo "⚙ Installing PIP and dependencies..."
+        apt update && apt install -y python3-pip
+        python3 -m ensurepip --default-pip
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r requirements.txt
     else
-      python3 -m venv venv
-      source venv/bin/activate
-      pip install -r requirements.txt
+        python3 -m venv venv
+        source venv/bin/activate
+        python3 -m pip install -r requirements.txt
     fi
 }
 
