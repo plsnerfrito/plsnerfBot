@@ -11,7 +11,7 @@ PTERO_MODE="false"
 function detect_pterodactyl() {
     declare -g PTERO_MODE
 
-    if [[ -d "/home/container" ]] || [[ "$HOME" == "/home/container" ]] || env | grep -qi 'PTERODACTYL'; then
+    if [[ -d "/home/container" ]] || [[ "$HOME" == "/home/container" ]] || env | grep -qi 'PTERO'; then
         echo "✔ Pterodactyl environment detected."
         PTERO_MODE="true"
     else
