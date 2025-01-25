@@ -5,18 +5,16 @@ INSTALL_DIR="/opt/plsnerfbot"
 CONFIG_FILE="$INSTALL_DIR/config.json"
 BACKUP_FILE="$INSTALL_DIR/config_backup.json"
 SERVICE_FILE="/etc/systemd/system/plsnerfbot.service"
-PTERO_MODE=false
+PTERO_MODE="false"
 
 # 🟢 Function to detect Pterodactyl environment
 function detect_pterodactyl() {
-    if grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null || [ -d "/home/container" ]; then
+    if [[ -d "/home/container" ]] || [[ -n "$PTERODACTYL" ]] || grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null; then
         echo "✔ Pterodactyl environment detected."
-        PTERO_MODE=true
-        export PTERO_MODE
+        export PTERO_MODE="true"
     else
         echo "✔ No Pterodactyl detected."
-        PTERO_MODE=false
-        export PTERO_MODE
+        export PTERO_MODE="false"
     fi
 }
 
@@ -226,13 +224,13 @@ EOL
 # 🏁 Main menu (Pterodactyl)
 detect_pterodactyl
 
-if [ "$PTERO_MODE" = "true" ]; then
+if [[ "$PTERO_MODE" == "true" ]]; then
     echo "🚀 Running automatic setup for Pterodactyl..."
     install_dependencies
     install_plsnerfbot
     configure_plsnerfbot
     echo "✅ plsnerfBot installed successfully in Pterodactyl! It will start when the container starts."
-    kill -SIGTERM $$  # Beendet das Skript sicher, um sicherzustellen, dass nichts weiterläuft
+    exit 0
 fi
 
 # 🏁 Main menu (no Pterodactyl)
