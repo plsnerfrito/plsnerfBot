@@ -5,15 +5,16 @@ INSTALL_DIR="/opt/plsnerfbot"
 CONFIG_FILE="$INSTALL_DIR/config.json"
 BACKUP_FILE="$INSTALL_DIR/config_backup.json"
 SERVICE_FILE="/etc/systemd/system/plsnerfbot.service"
+PTERO_MODE=false
 
 # 🟢 Function to detect Pterodactyl environment
 function detect_pterodactyl() {
     if grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null || [ -d "/home/container" ]; then
         echo "✔ Pterodactyl environment detected."
-        return 0
+        PTERO_MODE=true
     else
         echo "✔ No Pterodactyl detected."
-        return 1
+        PTERO_MODE=false
     fi
 }
 
@@ -68,7 +69,7 @@ function configure_plsnerfbot() {
     echo "🔧 Configuring plsnerfBot..."
 
     # Prüfe, ob wir in einem Pterodactyl-Container sind
-    if detect_pterodactyl; then
+    if [ "$PTERO_MODE" = true ]; then
         echo "✔ Using environment variables for configuration."
 
         PTERO_URL=${PTERO_URL:-"http://localhost"}
@@ -81,9 +82,7 @@ function configure_plsnerfbot() {
             echo "❌ ERROR: PTERO_API and DISCORD_BOT must be set in Pterodactyl!"
             exit 1
         fi
-
     else
-
       read -p "🌐 Pterodactyl Panel URL: " PTERO_URL
       read -p "🔑 Pterodactyl API Key: " PTERO_API
       read -p "🤖 Discord Bot Token: " DISCORD_BOT
@@ -223,13 +222,15 @@ EOL
 }
 
 # 🏁 Main menu
-if detect_pterodactyl; then
+detect_pterodactyl
+
+if [ "$PTERO_MODE" = true ]; then
     echo "🚀 Running automatic setup for Pterodactyl..."
     install_dependencies
     install_plsnerfbot
     configure_plsnerfbot
     echo "✅ plsnerfBot installed successfully in Pterodactyl! It will start when the container starts."
-    exit 0
+    exit 0  # 🚀 Verhindert, dass das Menü erscheint
 fi
 
 echo "Welcome to the plsnerfBot setup!"
