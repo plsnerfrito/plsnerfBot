@@ -6,6 +6,17 @@ CONFIG_FILE="$INSTALL_DIR/config.json"
 BACKUP_FILE="$INSTALL_DIR/config_backup.json"
 SERVICE_FILE="/etc/systemd/system/plsnerfbot.service"
 
+# 🟢 Function to detect Pterodactyl environment
+function detect_pterodactyl() {
+    if grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null || [ -d "/home/container" ]; then
+        echo "✔ Pterodactyl environment detected."
+        return 0
+    else
+        echo "✔ No Pterodactyl detected."
+        return 1
+    fi
+}
+
 # 🛑 Function to uninstall plsnerfBot
 function uninstall_plsnerfbot() {
     echo "🚀 Uninstalling plsnerfBot..."
@@ -57,8 +68,8 @@ function configure_plsnerfbot() {
     echo "🔧 Configuring plsnerfBot..."
 
     # Prüfe, ob wir in einem Pterodactyl-Container sind
-    if grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null || [ -d "/home/container" ]; then
-        echo "✔ Pterodactyl environment detected. Using environment variables."
+    if detect_pterodactyl; then
+        echo "✔ Using environment variables for configuration."
 
         PTERO_URL=${PTERO_URL:-"http://localhost"}
         PTERO_API=${PTERO_API}
@@ -70,21 +81,6 @@ function configure_plsnerfbot() {
             echo "❌ ERROR: PTERO_API and DISCORD_BOT must be set in Pterodactyl!"
             exit 1
         fi
-
-        declare -A SERVERS=(
-            ["Lobby"]="${SERVER_UUID_1}"
-            ["Survival"]="${SERVER_UUID_2}"
-        )
-
-        declare -A SERVER_TO_TEXT_CHANNEL=(
-            ["Lobby"]="${TEXT_CHANNEL_1}"
-            ["Survival"]="${TEXT_CHANNEL_2}"
-        )
-
-        declare -A SERVER_TO_VOICE_CHANNEL=(
-            ["Lobby"]="${VOICE_CHANNEL_1}"
-            ["Survival"]="${VOICE_CHANNEL_2}"
-        )
 
     else
 
@@ -227,6 +223,15 @@ EOL
 }
 
 # 🏁 Main menu
+if detect_pterodactyl; then
+    echo "🚀 Running automatic setup for Pterodactyl..."
+    install_dependencies
+    install_plsnerfbot
+    configure_plsnerfbot
+    echo "✅ plsnerfBot installed successfully in Pterodactyl! It will start when the container starts."
+    exit 0
+fi
+
 echo "Welcome to the plsnerfBot setup!"
 echo "Choose an option:"
 echo "1) Install plsnerfBot"
