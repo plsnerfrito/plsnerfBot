@@ -11,7 +11,7 @@ PTERO_MODE="false"
 function detect_pterodactyl() {
     declare -g PTERO_MODE
 
-    if [[ -d "/home/container" ]] || [[ "$HOME" == "/home/container" ]] || env | grep -qi 'PTERO'; then
+    if [[ -d "/home/container" ]] || [[ "$HOME" == "/home/container" ]] || env | grep -qi 'PTERODACTYL'; then
         echo "✔ Pterodactyl environment detected."
         PTERO_MODE="true"
     else
@@ -79,7 +79,7 @@ function configure_plsnerfbot() {
         echo "✔ Using environment variables for configuration."
 
         PTERO_URL=${PTERO_URL:-"http://localhost"}
-        PTERO_API=${PTERO_API}
+        PTERO_API=${PTERODACTYL_API}
         DISCORD_BOT=${DISCORD_BOT}
         MONITOR_INTERVAL=${MONITOR_INTERVAL:-60}
         BOT_LANGUAGE=${BOT_LANGUAGE:-"en"}
