@@ -58,6 +58,7 @@ function install_plsnerfbot() {
     cd "$INSTALL_DIR" || exit
 
     if [[ "$PTERO_MODE" == "true" ]]; then
+      apt update && apt install -y python3-pip
       pip install --upgrade pip
       pip install -r requirements.txt
     else
