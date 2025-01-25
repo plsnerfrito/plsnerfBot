@@ -9,7 +9,6 @@ else
     echo "$INSTALL_DIR"
 fi
 
-INSTALL_DIR="/opt/plsnerfbot"
 CONFIG_FILE="$INSTALL_DIR/config.json"
 BACKUP_FILE="$INSTALL_DIR/config_backup.json"
 SERVICE_FILE="/etc/systemd/system/plsnerfbot.service"
