@@ -59,11 +59,8 @@ function install_plsnerfbot() {
 
      if [[ "$PTERO_MODE" == "true" ]]; then
         echo "⚙ Installing PIP and dependencies..."
-        apt update && apt install -y python3-venv python3-pip
-        python3 -m venv venv
-        source venv/bin/activate
-        venv/bin/python3 -m pip install --upgrade pip
-        venv/bin/python3 -m pip install -r requirements.txt
+        apt update && apt install -y python3-pip
+        pip install --break-system-packages -r requirements.txt
     else
         python3 -m venv venv
         source venv/bin/activate
