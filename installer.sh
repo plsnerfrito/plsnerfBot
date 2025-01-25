@@ -1,15 +1,16 @@
 #!/bin/bash
-# plsnerfBot Modular Installer - Interactive Setup
+# plsnerfBot Modular Installer - Supports Pterodactyl & Systemd
 
 INSTALL_DIR="/opt/plsnerfbot"
 CONFIG_FILE="$INSTALL_DIR/config.json"
+BACKUP_FILE="$INSTALL_DIR/config_backup.json"
 SERVICE_FILE="/etc/systemd/system/plsnerfbot.service"
 
 # 🛑 Function to uninstall plsnerfBot
 function uninstall_plsnerfbot() {
     echo "🚀 Uninstalling plsnerfBot..."
-    sudo systemctl stop plsnerfbot 2>/dev/null
-    sudo systemctl disable plsnerfbot 2>/dev/null
+    sudo systemctl stop plsnerfbot 2>/dev/null || true
+    sudo systemctl disable plsnerfbot 2>/dev/null || true
     sudo rm -f "$SERVICE_FILE"
     sudo systemctl daemon-reload
     sudo rm -rf "$INSTALL_DIR"
@@ -43,67 +44,108 @@ function install_plsnerfbot() {
     pip install -r requirements.txt
 }
 
+# 🔄 Update plsnerfBot
+function update_plsnerfbot() {
+    echo "🔄 Updating plsnerfBot..."
+    cd "$INSTALL_DIR" || exit
+    git pull
+    echo "✅ Update complete!"
+}
+
 # ⚙️ Function to configure plsnerfBot
 function configure_plsnerfbot() {
     echo "🔧 Configuring plsnerfBot..."
 
-    read -p "🌐 Pterodactyl Panel URL: " PTERO_URL
-    read -p "🔑 Pterodactyl API Key: " PTERO_API
-    read -p "🤖 Discord Bot Token: " DISCORD_BOT
-    read -p "⏱️ Monitoring Interval (seconds, default 60): " MONITOR_INTERVAL
-    MONITOR_INTERVAL=${MONITOR_INTERVAL:-60}
+    # Prüfe, ob wir in einem Pterodactyl-Container sind
+    if [ -f "/.dockerenv" ] && [ -d "/home/container" ]; then
+        echo "✔ Pterodactyl environment detected. Using environment variables."
 
-    # 🌍 Select bot language
-    echo "🌍 Select the bot language:"
-    echo "1) English (Default)"
-    echo "2) German"
-    read -p "Enter choice (1/2): " LANG_CHOICE
+        PTERO_URL=${PTERO_URL:-"http://localhost"}
+        PTERO_API=${PTERO_API}
+        DISCORD_BOT=${DISCORD_BOT}
+        MONITOR_INTERVAL=${MONITOR_INTERVAL:-60}
+        BOT_LANGUAGE=${BOT_LANGUAGE:-"en"}
 
-    case "$LANG_CHOICE" in
+        if [ -z "$PTERO_API" ] || [ -z "$DISCORD_BOT" ]; then
+            echo "❌ ERROR: PTERO_API and DISCORD_BOT must be set in Pterodactyl!"
+            exit 1
+        fi
+
+        declare -A SERVERS=(
+            ["Lobby"]="${SERVER_UUID_1}"
+            ["Survival"]="${SERVER_UUID_2}"
+        )
+
+        declare -A SERVER_TO_TEXT_CHANNEL=(
+            ["Lobby"]="${TEXT_CHANNEL_1}"
+            ["Survival"]="${TEXT_CHANNEL_2}"
+        )
+
+        declare -A SERVER_TO_VOICE_CHANNEL=(
+            ["Lobby"]="${VOICE_CHANNEL_1}"
+            ["Survival"]="${VOICE_CHANNEL_2}"
+        )
+
+    else
+
+      read -p "🌐 Pterodactyl Panel URL: " PTERO_URL
+      read -p "🔑 Pterodactyl API Key: " PTERO_API
+      read -p "🤖 Discord Bot Token: " DISCORD_BOT
+      read -p "⏱️ Monitoring Interval (seconds, default 60): " MONITOR_INTERVAL
+      MONITOR_INTERVAL=${MONITOR_INTERVAL:-60}
+
+      # 🌍 Select bot language
+      echo "🌍 Select the bot language:"
+      echo "1) English (Default)"
+      echo "2) German"
+      read -p "Enter choice (1/2): " LANG_CHOICE
+
+      case "$LANG_CHOICE" in
         2) BOT_LANGUAGE="de" ;;
         *) BOT_LANGUAGE="en" ;;
-    esac
+      esac
 
-    # Discord channels
-    declare -A DISCORD_CHANNELS
-    declare -A SERVERS
-    declare -A SERVER_TO_TEXT_CHANNEL
-    declare -A SERVER_TO_VOICE_CHANNEL
+      # Discord channels
+      declare -A DISCORD_CHANNELS
+      declare -A SERVERS
+      declare -A SERVER_TO_TEXT_CHANNEL
+      declare -A SERVER_TO_VOICE_CHANNEL
 
-    echo "💬 Add Discord channels (Press ENTER when done)"
-    while true; do
+      echo "💬 Add Discord channels (Press ENTER when done)"
+      while true; do
         read -p "➕ Channel Name (e.g., 'lobby-status'): " CHANNEL_NAME
         if [ -z "$CHANNEL_NAME" ]; then break; fi
         read -p "📌 Discord Channel ID for '$CHANNEL_NAME': " CHANNEL_ID
         DISCORD_CHANNELS[$CHANNEL_NAME]=$CHANNEL_ID
-    done
+      done
 
-    echo "🖥️ Add Pterodactyl servers (Press ENTER when done)"
-    while true; do
+      echo "🖥️ Add Pterodactyl servers (Press ENTER when done)"
+      while true; do
         read -p "➕ Server Name (e.g., 'Lobby'): " SERVER_NAME
         if [ -z "$SERVER_NAME" ]; then break; fi
         read -p "📌 Server UUID from Pterodactyl for '$SERVER_NAME': " SERVER_ID
         SERVERS[$SERVER_NAME]=$SERVER_ID
-    done
+      done
 
-    echo "📡 Assign servers to Discord text and voice channels:"
-    for SERVER in "${!SERVERS[@]}"; do
-        echo "💬 Select a text channel for '$SERVER' (or press ENTER to skip):"
-        select CH in "${!DISCORD_CHANNELS[@]}"; do
-            if [ -n "$CH" ]; then
-                SERVER_TO_TEXT_CHANNEL[$SERVER]=$CH
-                break
-            fi
-        done
+      echo "📡 Assign servers to Discord text and voice channels:"
+      for SERVER in "${!SERVERS[@]}"; do
+          echo "💬 Select a text channel for '$SERVER' (or press ENTER to skip):"
+          select CH in "${!DISCORD_CHANNELS[@]}"; do
+              if [ -n "$CH" ]; then
+                  SERVER_TO_TEXT_CHANNEL[$SERVER]=$CH
+                  break
+              fi
+          done
 
-        echo "🔊 Select a voice channel for '$SERVER' (or press ENTER to skip):"
-        select CH in "${!DISCORD_CHANNELS[@]}"; do
-            if [ -n "$CH" ]; then
-                SERVER_TO_VOICE_CHANNEL[$SERVER]=$CH
-                break
-            fi
-        done
-    done
+          echo "🔊 Select a voice channel for '$SERVER' (or press ENTER to skip):"
+          select CH in "${!DISCORD_CHANNELS[@]}"; do
+              if [ -n "$CH" ]; then
+                  SERVER_TO_VOICE_CHANNEL[$SERVER]=$CH
+                  break
+              fi
+          done
+      done
+    fi
 
     # 📝 Save config.json
     echo "📝 Saving config.json..."
