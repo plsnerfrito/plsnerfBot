@@ -34,7 +34,11 @@ function uninstall_plsnerfbot() {
 # 🟢 Function to install dependencies
 function install_dependencies() {
     echo "📦 Installing dependencies..."
-    sudo apt update && sudo apt install -y python3 python3-venv curl git
+    if [[ "$PTERO_MODE" == "true" ]]; then
+        apt-get update && apt-get install -y python3 python3-venv curl git
+    else
+        sudo apt-get update && sudo apt-get install -y python3 python3-venv curl git
+    fi
 }
 
 # 🔄 Function to install plsnerfBot
@@ -43,14 +47,14 @@ function install_plsnerfbot() {
 
     # 🔄 Clean and create installation directory
     if [ -d "$INSTALL_DIR" ]; then
-        sudo rm -rf "$INSTALL_DIR"
+        rm -rf "$INSTALL_DIR"
     fi
-    sudo mkdir -p "$INSTALL_DIR"
+    mkdir -p "$INSTALL_DIR"
 
     # 📥 Clone the latest code from GitHub
     echo "📥 Cloning the latest code from GitHub..."
     cd /tmp || exit
-    sudo git clone https://github.com/plsnerfrito/plsnerfBot.git "$INSTALL_DIR"
+    git clone https://github.com/plsnerfrito/plsnerfBot.git "$INSTALL_DIR"
 
     cd "$INSTALL_DIR" || exit
     python3 -m venv venv
