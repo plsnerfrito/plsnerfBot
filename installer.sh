@@ -1,6 +1,12 @@
 #!/bin/bash
 # plsnerfBot Modular Installer - Supports Pterodactyl & Systemd
 
+if [[ "$PTERO_MODE" == "true" ]]; then
+    INSTALL_DIR="/home/container/plsnerfbot"
+else
+    INSTALL_DIR="/opt/plsnerfbot"
+fi
+
 INSTALL_DIR="/opt/plsnerfbot"
 CONFIG_FILE="$INSTALL_DIR/config.json"
 BACKUP_FILE="$INSTALL_DIR/config_backup.json"
