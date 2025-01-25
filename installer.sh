@@ -3,10 +3,10 @@
 
 if [[ "$PTERO_MODE" == "true" ]]; then
     INSTALL_DIR="/home/container/plsnerfbot"
-    echo INSTALL_DIR
+    echo "$INSTALL_DIR"
 else
     INSTALL_DIR="/opt/plsnerfbot"
-    echo INSTALL_DIR
+    echo "$INSTALL_DIR"
 fi
 
 INSTALL_DIR="/opt/plsnerfbot"
