@@ -9,12 +9,14 @@ PTERO_MODE="false"
 
 # 🟢 Function to detect Pterodactyl environment
 function detect_pterodactyl() {
-    if [[ -d "/home/container" ]] || [[ -n "$PTERODACTYL" ]] || grep -qE '(docker|lxc|kubepods)' /proc/1/cgroup 2>/dev/null; then
+    declare -g PTERO_MODE
+
+    if [[ -d "/home/container" ]] || [[ "$HOME" == "/home/container" ]] || env | grep -qi 'PTERODACTYL'; then
         echo "✔ Pterodactyl environment detected."
-        export PTERO_MODE="true"
+        PTERO_MODE="true"
     else
         echo "✔ No Pterodactyl detected."
-        export PTERO_MODE="false"
+        PTERO_MODE="false"
     fi
 }
 
